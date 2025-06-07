@@ -1,9 +1,18 @@
-[gd_scene load_steps=13 format=3 uid="uid://caahiaj0pinth"]
+[gd_scene load_steps=16 format=3 uid="uid://caahiaj0pinth"]
 
 [ext_resource type="Texture2D" uid="uid://bata8r37uhwym" path="res://assets/megaman_walk.png" id="1_3vyb7"]
 [ext_resource type="Texture2D" uid="uid://sv5e72dirvc3" path="res://assets/mm_idle.png" id="1_g2els"]
 [ext_resource type="Script" uid="uid://ds6bg11mrcm07" path="res://scripts/player.gd" id="1_qhqgy"]
+[ext_resource type="Texture2D" uid="uid://blhgvi0ur70ut" path="res://assets/climb.png" id="2_qlg0r"]
 [ext_resource type="Texture2D" uid="uid://c0o6pr60own0t" path="res://assets/jumping.png" id="3_dqkch"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_smehm"]
+atlas = ExtResource("2_qlg0r")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ur7pv"]
+atlas = ExtResource("2_qlg0r")
+region = Rect2(16, 0, 16, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qlg0r"]
 atlas = ExtResource("1_g2els")
@@ -31,6 +40,17 @@ region = Rect2(24, 0, 24, 24)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_qlg0r"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_smehm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ur7pv")
+}],
+"loop": true,
+"name": &"climb",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qlg0r")
@@ -65,7 +85,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk",
-"speed": 7.0
+"speed": 6.0
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_3vyb7"]
@@ -75,7 +95,7 @@ script = ExtResource("1_qhqgy")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_qlg0r")
-animation = &"jump"
+animation = &"climb"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(1, 1)
