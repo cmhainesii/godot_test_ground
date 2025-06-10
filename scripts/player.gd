@@ -114,8 +114,7 @@ func _on_ladder_body_entered(body: Node2D, ladder: Area2D) -> void:
 	if body != self:
 		return
 		
-	if ladder_area != ladder:
-		ladder_area = ladder
+	ladder_area = ladder
 	can_grab_ladder = true
 		
 
@@ -126,4 +125,3 @@ func _on_ladder_body_exited(body: Node2D, ladder: Area2D) -> void:
 		if on_ladder:
 			exit_ladder()
 		ladder_area = null
-		print("Exited ladder")
