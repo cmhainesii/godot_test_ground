@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=4 uid="uid://ooxeh6npphu4"]
+[gd_scene load_steps=7 format=4 uid="uid://ooxeh6npphu4"]
 
 [ext_resource type="PackedScene" uid="uid://caahiaj0pinth" path="res://scenes/player.tscn" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://cd086v5hyooug" path="res://scenes/spark_man.gd" id="2_lnu2h"]
@@ -9,6 +9,9 @@ size = Vector2(250, 5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lnu2h"]
 size = Vector2(11, 63.875)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lbhrr"]
+size = Vector2(14, 3)
 
 [node name="Game" type="Node"]
 
@@ -67,3 +70,21 @@ metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ladder2"]
 shape = SubResource("RectangleShape2D_lnu2h")
+
+[node name="LadderExitTop" type="Area2D" parent="." groups=["ladder_exit"]]
+position = Vector2(-80, -107)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderExitTop"]
+position = Vector2(0, -2.5)
+shape = SubResource("RectangleShape2D_lbhrr")
+
+[node name="LadderEntryBottom" type="Area2D" parent="." groups=["ladder_exit"]]
+position = Vector2(-80, -112)
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderEntryBottom"]
+position = Vector2(0, -2.5)
+shape = SubResource("RectangleShape2D_lbhrr")
+
+[connection signal="body_entered" from="LadderExitTop" to="Player" method="_on_ladder_exit_top_entered"]
+[connection signal="body_entered" from="LadderEntryBottom" to="Player" method="_on_ladder_exit_top_entered"]

@@ -6,17 +6,24 @@ const JUMP_VELOCITY = -275.0
 const CLIMB_SPEED = 60
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var camera: Camera2D = $"../Camera2D"
+@onready var ladder_entry_bottom: Area2D = $"../LadderEntryBottom"
 
 var on_ladder = false
 var can_grab_ladder = false
 var ladder_area : Area2D = null
 var ignore_jump_animation_until := -1.0
+var is_transitioning := false
 
 
 func _ready() -> void:
 	for ladder in get_tree().get_nodes_in_group("ladder"):
 		ladder.connect("body_entered", Callable(self, "_on_ladder_body_entered").bind(ladder))
 		ladder.connect("body_exited", Callable(self, "_on_ladder_body_exited").bind(ladder))
+		
+	for exit in get_tree().get_nodes_in_group("ladder_exit"):
+		exit.connect("body_entered", Callable(self, "_on_ladder_exit_entered").bind(exit))
+
 		
 
 
@@ -125,3 +132,29 @@ func _on_ladder_body_exited(body: Node2D, ladder: Area2D) -> void:
 		if on_ladder:
 			exit_ladder()
 		ladder_area = null
+
+func start_ladder_transition(area: Area2D) -> void:
+	var camera := get_viewport().get_camera_2d()
+	var target_pos := camera.global_position - Vector2(0, 240) # Adjust if not NES-style screen height
+	
+	var tween := get_tree().create_tween()
+	camera.enabled = false
+	tween.tween_property(camera, "global_position", target_pos, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_callback(Callable(self, "_on_ladder_transition_complete"))
+
+func _on_ladder_exit_entered(body: Node2D, area: Area2D) -> void:
+	if body != self or is_transitioning:
+		return
+		
+	if on_ladder and Input.is_action_pressed("move_up"):
+		is_transitioning = true
+		start_ladder_transition(area)
+		
+func _on_ladder_transition_complete() -> void:
+	global_position = ladder_entry_bottom.global_position
+	velocity = Vector2.ZERO
+	on_ladder = true
+	camera.enabled = true
+	is_transitioning = false
+
+		
