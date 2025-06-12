@@ -14,7 +14,7 @@ var can_grab_ladder = false
 var ladder_area : Area2D = null
 var ignore_jump_animation_until := -1.0
 var is_transitioning := false
-
+var transition_cooldown_until := 0.0
 
 func _ready() -> void:
 	for ladder in get_tree().get_nodes_in_group("ladder"):
@@ -37,13 +37,13 @@ func _physics_process(delta: float) -> void:
 	
 	# Ladder climbing behavior
 	if on_ladder:
-		# Climbing movement
-		if up:
-			velocity.y = -CLIMB_SPEED
-		elif down:
-			velocity.y = CLIMB_SPEED
-		else:
-			velocity.y = 0
+		if not is_transitioning:
+			if up:
+				velocity.y = -CLIMB_SPEED
+			elif down:
+				velocity.y = CLIMB_SPEED
+			else:
+				velocity.y = 0
 			
 		# Exit ladder if jump is pressed
 		if Input.is_action_just_pressed("jump"):
@@ -78,7 +78,7 @@ func _physics_process(delta: float) -> void:
 	# Play animation
 	if on_ladder:
 		animated_sprite.play("climb")
-		if not (up or down):
+		if not (up or down) or is_transitioning:
 			animated_sprite.pause()
 		
 	elif is_on_floor():
@@ -134,16 +134,19 @@ func _on_ladder_body_exited(body: Node2D, ladder: Area2D) -> void:
 		ladder_area = null
 
 func start_ladder_transition(area: Area2D) -> void:
-	var camera := get_viewport().get_camera_2d()
+	visible = false
 	var target_pos := camera.global_position - Vector2(0, 240) # Adjust if not NES-style screen height
 	
 	var tween := get_tree().create_tween()
-	camera.enabled = false
-	tween.tween_property(camera, "global_position", target_pos, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(camera, "global_position", target_pos, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_callback(Callable(self, "_on_ladder_transition_complete"))
 
 func _on_ladder_exit_entered(body: Node2D, area: Area2D) -> void:
 	if body != self or is_transitioning:
+		return
+
+	var current_time = Time.get_ticks_msec() / 1000.0
+	if current_time < transition_cooldown_until:
 		return
 		
 	if on_ladder and Input.is_action_pressed("move_up"):
@@ -154,7 +157,8 @@ func _on_ladder_transition_complete() -> void:
 	global_position = ladder_entry_bottom.global_position
 	velocity = Vector2.ZERO
 	on_ladder = true
-	camera.enabled = true
 	is_transitioning = false
+	visible = true
+	transition_cooldown_until = Time.get_ticks_msec() / 1000.0 + 1.0 
 
 		
