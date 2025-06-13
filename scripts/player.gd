@@ -8,21 +8,21 @@ const CLIMB_SPEED = 60
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var camera: Camera2D = $"../Camera2D"
 @onready var ladder_entry_bottom: Area2D = $"../LadderEntryBottom"
+@onready var ladder_manager: Node = $"../LadderManager"
 
 var on_ladder = false
 var can_grab_ladder = false
 var ladder_area : Area2D = null
 var ignore_jump_animation_until := -1.0
 var is_transitioning := false
-var transition_cooldown_until := 0.0
 
 func _ready() -> void:
-	for ladder in get_tree().get_nodes_in_group("ladder"):
-		ladder.connect("body_entered", Callable(self, "_on_ladder_body_entered").bind(ladder))
-		ladder.connect("body_exited", Callable(self, "_on_ladder_body_exited").bind(ladder))
+	await get_tree().process_frame
+	if ladder_manager:
+		ladder_manager.player = self
+		ladder_manager.camera = camera
+
 		
-	for exit in get_tree().get_nodes_in_group("ladder_exit"):
-		exit.connect("body_entered", Callable(self, "_on_ladder_exit_entered").bind(exit))
 
 		
 
@@ -34,7 +34,15 @@ func _physics_process(delta: float) -> void:
 	# Ladder: Enter logic
 	if not on_ladder and can_grab_ladder and up and not is_on_floor() and ladder_area:
 		enter_ladder(ladder_area)
-	
+
+	elif down and is_on_floor() and not on_ladder:
+		# Try to find a ladder below the player
+		for ladder in get_tree().get_nodes_in_group("ladder"):
+			if abs(ladder.global_position.x - global_position.x) < 8 and ladder.global_position.y > global_position.y:
+				global_position.y += 4
+				enter_ladder(ladder)
+				break
+				
 	# Ladder climbing behavior
 	if on_ladder:
 		if not is_transitioning:
@@ -51,7 +59,6 @@ func _physics_process(delta: float) -> void:
 			animated_sprite.play("jump")
 			velocity += get_gravity() * delta # Apply gravity immediately
 			
-		
 	elif down and not on_ladder and can_grab_ladder and ladder_area:
 		global_position.y += 4
 		enter_ladder(ladder_area)
@@ -65,7 +72,6 @@ func _physics_process(delta: float) -> void:
 			velocity.y = JUMP_VELOCITY
 
 	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
 	var direction := Input.get_axis("walk_left", "walk_right")
 	var now = Time.get_ticks_msec() / 1000.0
 	
@@ -91,7 +97,7 @@ func _physics_process(delta: float) -> void:
 			animated_sprite.play("jump")
 
 	
-	# Apply Movment
+	# Apply Movement
 	if on_ladder:
 		velocity.x = 0 # Lock horizontal movement while on ladder
 	else:
@@ -100,7 +106,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = move_toward(velocity.x, 0, SPEED)
 			
-	if global_position.y >= 120 :
+	if global_position.y >= 120:
 		get_tree().reload_current_scene()
 
 	move_and_slide()
@@ -115,50 +121,5 @@ func enter_ladder(ladder: Area2D):
 	on_ladder = true
 	velocity = Vector2.ZERO
 	global_position.x = ladder.global_position.x
-
-
-func _on_ladder_body_entered(body: Node2D, ladder: Area2D) -> void:
-	if body != self:
-		return
-		
-	ladder_area = ladder
-	can_grab_ladder = true
-		
-
-
-func _on_ladder_body_exited(body: Node2D, ladder: Area2D) -> void:
-	if body == self and ladder_area == ladder:
-		can_grab_ladder = false
-		if on_ladder:
-			exit_ladder()
-		ladder_area = null
-
-func start_ladder_transition(area: Area2D) -> void:
-	visible = false
-	var target_pos := camera.global_position - Vector2(0, 240) # Adjust if not NES-style screen height
-	
-	var tween := get_tree().create_tween()
-	tween.tween_property(camera, "global_position", target_pos, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_callback(Callable(self, "_on_ladder_transition_complete"))
-
-func _on_ladder_exit_entered(body: Node2D, area: Area2D) -> void:
-	if body != self or is_transitioning:
-		return
-
-	var current_time = Time.get_ticks_msec() / 1000.0
-	if current_time < transition_cooldown_until:
-		return
-		
-	if on_ladder and Input.is_action_pressed("move_up"):
-		is_transitioning = true
-		start_ladder_transition(area)
-		
-func _on_ladder_transition_complete() -> void:
-	global_position = ladder_entry_bottom.global_position
-	velocity = Vector2.ZERO
-	on_ladder = true
-	is_transitioning = false
-	visible = true
-	transition_cooldown_until = Time.get_ticks_msec() / 1000.0 + 1.0 
 
 		
