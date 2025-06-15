@@ -15,6 +15,7 @@ var can_grab_ladder = false
 var ladder_area : Area2D = null
 var ignore_jump_animation_until := -1.0
 var is_transitioning := false
+var current_screen := 0
 
 func _ready() -> void:
 	await get_tree().process_frame
@@ -22,10 +23,10 @@ func _ready() -> void:
 		ladder_manager.player = self
 		ladder_manager.camera = camera
 
-		
+	# Keep track of player's location for game logic
+	current_screen = 1;
 
 		
-
 
 func _physics_process(delta: float) -> void:
 	var up := Input.is_action_pressed("move_up")
@@ -121,5 +122,17 @@ func enter_ladder(ladder: Area2D):
 	on_ladder = true
 	velocity = Vector2.ZERO
 	global_position.x = ladder.global_position.x
-
 		
+
+
+func _on_fall_down_screen_body_entered(body: Node2D) -> void:
+	if current_screen == 2 and not on_ladder and body == self:
+		# Hide player immediately
+		visible = false
+		
+		# Prevent player from continuing to fall while transitioning
+		velocity = Vector2.ZERO
+		is_transitioning = true
+
+		# Use the ladder manager to handle the transition
+		ladder_manager.start_ladder_transition(ladder_manager.screen1_landing, Vector2(0, 273), true)

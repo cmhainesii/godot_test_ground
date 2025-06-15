@@ -1,9 +1,9 @@
-[gd_scene load_steps=8 format=4 uid="uid://ooxeh6npphu4"]
+[gd_scene load_steps=10 format=4 uid="uid://ooxeh6npphu4"]
 
 [ext_resource type="PackedScene" uid="uid://caahiaj0pinth" path="res://scenes/player.tscn" id="1_uwrxv"]
-[ext_resource type="Script" uid="uid://cd086v5hyooug" path="res://scenes/spark_man.gd" id="2_lnu2h"]
+[ext_resource type="Script" uid="uid://cd086v5hyooug" path="res://scripts/spark_man.gd" id="2_lnu2h"]
 [ext_resource type="TileSet" uid="uid://vgwgri06kcyq" path="res://assets/game.tres" id="3_lbhrr"]
-[ext_resource type="Script" uid="uid://dvvfk2yfu21d3" path="res://scenes/ladder_manager.gd" id="4_lbhrr"]
+[ext_resource type="Script" uid="uid://dvvfk2yfu21d3" path="res://scripts/ladder_manager.gd" id="4_lbhrr"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uwrxv"]
 size = Vector2(250, 5)
@@ -13,6 +13,12 @@ size = Vector2(11, 56.8438)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lbhrr"]
 size = Vector2(14, 3)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p57ef"]
+size = Vector2(51, 3.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_iywne"]
+size = Vector2(59, 4.75)
 
 [node name="Game" type="Node"]
 
@@ -57,62 +63,79 @@ tile_set = ExtResource("3_lbhrr")
 
 [node name="FlickerTimer" type="Timer" parent="SparkMan"]
 
-[node name="Ladder" type="Area2D" parent="." groups=["ladder"]]
+[node name="LadderManager" type="Node" parent="."]
+script = ExtResource("4_lbhrr")
+
+[node name="Ladder" type="Area2D" parent="LadderManager" groups=["ladder"]]
 position = Vector2(64, 17)
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ladder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Ladder"]
 position = Vector2(0, 1.42188)
 shape = SubResource("RectangleShape2D_lnu2h")
 
-[node name="Ladder2" type="Area2D" parent="." groups=["ladder"]]
+[node name="Ladder2" type="Area2D" parent="LadderManager" groups=["ladder"]]
 position = Vector2(-80, -76)
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ladder2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Ladder2"]
 shape = SubResource("RectangleShape2D_lnu2h")
 
-[node name="Ladder3" type="Area2D" parent="." groups=["ladder"]]
+[node name="Ladder3" type="Area2D" parent="LadderManager" groups=["ladder"]]
 position = Vector2(-80, -145)
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ladder3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Ladder3"]
 position = Vector2(0, 2.96875)
 shape = SubResource("RectangleShape2D_lnu2h")
 
-[node name="Screen1_LadderEntry" type="Area2D" parent="." groups=["ladder_entries", "screen1_nodes"]]
-position = Vector2(-80, -109.5)
+[node name="Screen1_LadderEntry" type="Area2D" parent="LadderManager" groups=["ladder_entries", "screen1_nodes"]]
+position = Vector2(-82, -110.5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Screen1_LadderEntry"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Screen1_LadderEntry"]
 shape = SubResource("RectangleShape2D_lbhrr")
 
-[node name="Screen1_LadderExit" type="Area2D" parent="." groups=["ladder_exits", "screen1_nodes", "up_transition_points"]]
+[node name="Screen1_LadderExit" type="Area2D" parent="LadderManager" groups=["ladder_exits", "screen1_nodes", "up_transition_points"]]
 position = Vector2(-80, -109.5)
 rotation = -0.523598
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Screen1_LadderExit"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Screen1_LadderExit"]
 rotation = -2.61799
 shape = SubResource("RectangleShape2D_lbhrr")
 
-[node name="Screen2_LadderEntry" type="Area2D" parent="." groups=["ladder_entries", "screen2_nodes"]]
+[node name="Screen2_LadderEntry" type="Area2D" parent="LadderManager" groups=["ladder_entries", "screen2_nodes"]]
 position = Vector2(-80, -112.5)
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Screen2_LadderEntry"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Screen2_LadderEntry"]
 shape = SubResource("RectangleShape2D_lbhrr")
 
-[node name="Screen2_LadderExit" type="Area2D" parent="." groups=["down_transition_points", "ladder_exits", "screen2_nodes"]]
+[node name="Screen2_LadderExit" type="Area2D" parent="LadderManager" groups=["down_transition_points", "ladder_exits", "screen2_nodes"]]
 position = Vector2(-80, -112.5)
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Screen2_LadderExit"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Screen2_LadderExit"]
 shape = SubResource("RectangleShape2D_lbhrr")
 
-[node name="LadderManager" type="Node" parent="."]
-script = ExtResource("4_lbhrr")
+[node name="Screen1Landing" type="Area2D" parent="LadderManager"]
+position = Vector2(-81, -99)
+metadata/_edit_group_ = true
 
-[connection signal="body_entered" from="Screen1_LadderEntry" to="Player" method="_on_ladder_exit_top_entered"]
-[connection signal="body_entered" from="Screen1_LadderExit" to="Player" method="_on_ladder_exit_top_entered"]
-[connection signal="body_entered" from="Screen2_LadderEntry" to="Player" method="_on_ladder_exit_top_entered"]
-[connection signal="body_entered" from="Screen2_LadderExit" to="Player" method="_on_ladder_exit_top_entered"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LadderManager/Screen1Landing"]
+position = Vector2(0.5, -7.625)
+shape = SubResource("RectangleShape2D_p57ef")
+
+[node name="FallDownScreen" type="Area2D" parent="."]
+position = Vector2(-77.5, -110.5)
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallDownScreen"]
+position = Vector2(0, -0.875)
+shape = SubResource("RectangleShape2D_iywne")
+
+[connection signal="body_entered" from="LadderManager/Screen1_LadderEntry" to="Player" method="_on_ladder_exit_top_entered"]
+[connection signal="body_entered" from="LadderManager/Screen1_LadderExit" to="Player" method="_on_ladder_exit_top_entered"]
+[connection signal="body_entered" from="LadderManager/Screen2_LadderEntry" to="Player" method="_on_ladder_exit_top_entered"]
+[connection signal="body_entered" from="LadderManager/Screen2_LadderExit" to="Player" method="_on_ladder_exit_top_entered"]
+[connection signal="body_entered" from="FallDownScreen" to="Player" method="_on_fall_down_screen_body_entered"]

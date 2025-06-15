@@ -8,8 +8,12 @@ const COOLDOWN_DURATION = 1.0
 
 @onready var player: CharacterBody2D = $"../Player"
 @onready var camera: Camera2D = $"../Camera2D"
-@onready var screen1_entry: Area2D = $"../Screen1_LadderEntry"
-@onready var screen2_entry: Area2D = $"../Screen2_LadderEntry"
+@onready var screen1_exit: Area2D = $Screen1_LadderExit
+@onready var screen2_entry: Area2D = $Screen2_LadderEntry
+@onready var screen1_landing: Area2D = $Screen1Landing
+@onready var screen1_entry: Area2D = $Screen1_LadderEntry
+
+
 
 
 var is_transitioning := false
@@ -54,9 +58,9 @@ func _on_ladder_exit_entered(body: Node2D, exit: Area2D) -> void:
 
 	if player.on_ladder:
 		if exit.is_in_group("up_transition_points"):
-			start_ladder_transition(exit, Vector2(0, -273), false)
+			start_ladder_transition(exit, Vector2(0, -240), false)
 		elif exit.is_in_group("down_transition_points"):
-			start_ladder_transition(exit, Vector2(0, 273), true)
+			start_ladder_transition(exit, Vector2(0, 240), true)
 
 	
 func start_ladder_transition(exit: Area2D, offset: Vector2, going_down: bool) -> void:
@@ -72,19 +76,38 @@ func start_ladder_transition(exit: Area2D, offset: Vector2, going_down: bool) ->
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	# When going downward, we need a different target position
-	var target_entry = screen1_entry if going_down else screen2_entry
+	var target_entry
+	if exit == screen1_landing:
+		target_entry = screen1_landing
+	else:
+		target_entry = screen1_entry if going_down else screen2_entry
 
 	tween.tween_callback(Callable(self, "_on_ladder_transition_complete").bind(target_entry, going_down))
 	
 func _on_ladder_transition_complete(target_entry: Area2D, going_down: bool) -> void:
-	player.global_position = target_entry.global_position
-	if going_down:
-		player.global_position.y += 16
+	var should_be_on_ladder := true
+	if target_entry == screen1_landing:
+		var landing_y = target_entry.global_position.y
+		var current_x = player.global_position.x
+		player.global_position = Vector2(current_x, landing_y)
+		should_be_on_ladder = false
 	else:
-		player.global_position.y -= 32
+		player.global_position = target_entry.global_position
+		if going_down:
+			player.global_position.y += 16
+		
+			
+		player.on_ladder = true
 
+	if going_down:
+		player.current_screen -= 1
+	else:
+		player.current_screen += 1
+		
+	print("Current Screen:", player.current_screen)
+	
 	player.velocity = Vector2.ZERO
-	player.on_ladder = true
+	player.on_ladder = should_be_on_ladder
 	player.is_transitioning = false
 	player.visible = true
 	
